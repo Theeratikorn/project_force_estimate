@@ -79,6 +79,10 @@ class UR5eControlGUI(QWidget):
         self.status_label = QLabel("Status: Disconnected")
         layout.addWidget(self.status_label)
 
+        # Data Display Label
+        self.data_label = QLabel("Data: N/A")
+        layout.addWidget(self.data_label)
+
         self.setLayout(layout)
 
     def connect_robot(self):
@@ -130,6 +134,7 @@ class UR5eControlGUI(QWidget):
             robot_thread.start()
             log_thread.start()
 
+            #self.timer.timeout.connect(self.update_status)
             self.timer.start(500)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
@@ -161,7 +166,7 @@ class UR5eControlGUI(QWidget):
 
             elapsed_time = time.time() - start_time
             remaining_time = dt_motion - elapsed_time
-            if remaining_time > 0:
+            if (remaining_time > 0):
                 time.sleep(remaining_time)
 
         self.stop_event.set()
@@ -184,6 +189,14 @@ class UR5eControlGUI(QWidget):
             remaining_time = dt_logging - elapsed_time
             if remaining_time > 0:
                 time.sleep(remaining_time)
+
+    def update_status(self):
+        """Updates the GUI with the latest recorded data"""
+        if self.data:
+            latest_data = self.data[-1]
+            self.data_label.setText(f"Data: {latest_data}")
+        else:
+            self.data_label.setText("Data: N/A")
 
     def export_csv(self):
         """Exports collected data to CSV"""
