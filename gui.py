@@ -134,7 +134,7 @@ class UR5eControlGUI(QWidget):
             robot_thread.start()
             log_thread.start()
 
-            #self.timer.timeout.connect(self.update_status)
+            self.timer.timeout.connect(self.update_status)
             self.timer.start(500)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
@@ -194,7 +194,9 @@ class UR5eControlGUI(QWidget):
         """Updates the GUI with the latest recorded data"""
         if self.data:
             latest_data = self.data[-1]
-            self.data_label.setText(f"Data: {latest_data}")
+            tcp_x, tcp_y, tcp_z = latest_data[7:10]
+            force_x, force_y, force_z = latest_data[13:16]
+            self.data_label.setText(f"TCP: ({tcp_x:.3f}, {tcp_y:.3f}, {tcp_z:.3f}), Force: ({force_x:.3f}, {force_y:.3f}, {force_z:.3f})")
         else:
             self.data_label.setText("Data: N/A")
 
