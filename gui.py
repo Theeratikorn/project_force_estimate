@@ -42,11 +42,11 @@ class UR5eControlGUI(QWidget):
         form_layout.addRow(self.btn_connect)
 
         # Input Fields for Motion Parameters
-        self.input_amp = QLineEdit("0.05")
-        self.input_T_motion = QLineEdit("1.0")
-        self.input_steps_per_cycle = QLineEdit("100")
+        self.input_amp = QLineEdit("0.0025")
+        self.input_T_motion = QLineEdit("0.05")
+        self.input_steps_per_cycle = QLineEdit("1000")
         self.input_cycles = QLineEdit("5")
-        self.input_freq_logging = QLineEdit("50")
+        self.input_freq_logging = QLineEdit("500")
         self.input_speed = QLineEdit("0.5")
         self.input_acceleration = QLineEdit("2.0")
 
