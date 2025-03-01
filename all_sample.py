@@ -163,6 +163,7 @@ class UR5eControlGUI(QWidget):
 
                 # Start Threads
                 try:
+                    print(f"Starting threads for amplitude: {amp}")
                     robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
                     log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
                     
@@ -171,6 +172,7 @@ class UR5eControlGUI(QWidget):
 
                     robot_thread.join()
                     log_thread.join()
+                    print(f"Threads completed for amplitude: {amp}")
                 except Exception as e:
                     QMessageBox.critical(self, "Thread Error", f"Error in threads: {str(e)}")
                     self.stop_event.set()
@@ -183,6 +185,7 @@ class UR5eControlGUI(QWidget):
             self.btn_stop.setEnabled(False)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
+            print(f"Exception in start_robot: {str(e)}")
 
     def stop_robot(self):
         """Stops the robot movement and logging"""
