@@ -100,7 +100,7 @@ class UR5eControlGUI(QWidget):
             self.status_label.setText("Status: Disconnected")
 
     def start_robot(self):
-        """Starts the robot movement and logging"""
+        """Starts the robot movement and logging with multiple amplitudes"""
         if not self.rtde_c or not self.rtde_r:
             QMessageBox.warning(self, "Warning", "Not connected to robot!")
             return
@@ -110,7 +110,7 @@ class UR5eControlGUI(QWidget):
             self.data = []  # Clear previous data
 
             # Get user inputs
-            amp = float(self.input_amp.text())
+            amps = [float(amp) for amp in self.input_amp.text().split(",")]
             T_motion = float(self.input_T_motion.text())
             steps_per_cycle = int(self.input_steps_per_cycle.text())
             cycles = int(self.input_cycles.text())
@@ -127,15 +127,24 @@ class UR5eControlGUI(QWidget):
             self.btn_start.setEnabled(False)
             self.btn_stop.setEnabled(True)
 
-            # Start Threads
-            robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
-            log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
+            def run_amplitude(amp):
+                robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
+                log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
 
-            robot_thread.start()
-            log_thread.start()
+                robot_thread.start()
+                log_thread.start()
 
-            self.timer.timeout.connect(self.update_status)
-            self.timer.start(500)
+                robot_thread.join()
+                self.stop_robot()
+
+            for amp in amps:
+                if self.stop_event.is_set():
+                    break
+                run_amplitude(amp)
+
+            self.status_label.setText("Status: Completed")
+            self.btn_start.setEnabled(True)
+            self.btn_stop.setEnabled(False)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
 
@@ -170,7 +179,6 @@ class UR5eControlGUI(QWidget):
                 time.sleep(remaining_time)
 
         self.stop_event.set()
-        self.stop_robot()
 
     def log_data(self, dt_logging):
         """Logs robot data"""
