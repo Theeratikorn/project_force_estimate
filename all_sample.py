@@ -133,13 +133,17 @@ class UR5eControlGUI(QWidget):
             self.data = []  # Clear previous data
 
             # Get user inputs
-            amplitudes = [float(amp.strip()) for amp in self.input_amps.text().split(",")]
-            T_motion = float(self.input_T_motion.text())
-            steps_per_cycle = int(self.input_steps_per_cycle.text())
-            cycles = int(self.input_cycles.text())
-            freq_logging = int(self.input_freq_logging.text())
-            speed = float(self.input_speed.text())
-            acceleration = float(self.input_acceleration.text())
+            try:
+                amplitudes = [float(amp.strip()) for amp in self.input_amps.text().split(",")]
+                T_motion = float(self.input_T_motion.text())
+                steps_per_cycle = int(self.input_steps_per_cycle.text())
+                cycles = int(self.input_cycles.text())
+                freq_logging = int(self.input_freq_logging.text())
+                speed = float(self.input_speed.text())
+                acceleration = float(self.input_acceleration.text())
+            except ValueError as e:
+                QMessageBox.critical(self, "Input Error", f"Invalid input: {str(e)}")
+                return
 
             freq_motion = 1 / T_motion
             dt_motion = T_motion / steps_per_cycle
@@ -158,14 +162,19 @@ class UR5eControlGUI(QWidget):
                 self.status_label.setText(f"Status: Running... Amplitude: {amp} m")
 
                 # Start Threads
-                robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
-                log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
+                try:
+                    robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
+                    log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
+                    
+                    robot_thread.start()
+                    log_thread.start()
 
-                robot_thread.start()
-                log_thread.start()
-
-                robot_thread.join()
-                log_thread.join()
+                    robot_thread.join()
+                    log_thread.join()
+                except Exception as e:
+                    QMessageBox.critical(self, "Thread Error", f"Error in threads: {str(e)}")
+                    self.stop_event.set()
+                    break
 
                 self.export_csv(amp)
 
