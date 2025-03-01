@@ -68,32 +68,24 @@ class UR5eControlGUI(QWidget):
         btn_layout = QHBoxLayout()
         self.btn_start = QPushButton("Start Robot")
         self.btn_stop = QPushButton("Stop Robot")
-        self.btn_move_rec = QPushButton("Move and Record")  # New button
-        self.btn_stop_move_rec = QPushButton("Stop Move and Record")  # New button
         self.btn_show_data = QPushButton("Show Current Data")  # New button
         self.btn_set_zero_tcp = QPushButton("Set Zero TCP")  # New button
         self.btn_set_zero_force = QPushButton("Set Zero Force")  # New button
 
         self.btn_start.clicked.connect(self.start_robot)
         self.btn_stop.clicked.connect(self.stop_robot)
-        self.btn_move_rec.clicked.connect(self.move_and_record)  # Connect new button
-        self.btn_stop_move_rec.clicked.connect(self.stop_move_and_record)  # Connect new button
         self.btn_show_data.clicked.connect(self.show_current_data)  # Connect new button
         self.btn_set_zero_tcp.clicked.connect(self.set_zero_tcp)  # Connect new button
         self.btn_set_zero_force.clicked.connect(self.set_zero_force)  # Connect new button
 
         self.btn_start.setEnabled(False)
         self.btn_stop.setEnabled(False)
-        self.btn_move_rec.setEnabled(False)  # Disable new button
-        self.btn_stop_move_rec.setEnabled(False)  # Disable new button
         self.btn_show_data.setEnabled(False)  # Disable new button
         self.btn_set_zero_tcp.setEnabled(False)  # Disable new button
         self.btn_set_zero_force.setEnabled(False)  # Disable new button
 
         btn_layout.addWidget(self.btn_start)
         btn_layout.addWidget(self.btn_stop)
-        btn_layout.addWidget(self.btn_move_rec)  # Add new button to layout
-        btn_layout.addWidget(self.btn_stop_move_rec)  # Add new button to layout
         btn_layout.addWidget(self.btn_show_data)  # Add new button to layout
         btn_layout.addWidget(self.btn_set_zero_tcp)  # Add new button to layout
         btn_layout.addWidget(self.btn_set_zero_force)  # Add new button to layout
@@ -117,7 +109,6 @@ class UR5eControlGUI(QWidget):
             self.rtde_r = rtde_receive.RTDEReceiveInterface(ip)
             self.status_label.setText("Status: Connected")
             self.btn_start.setEnabled(True)
-            self.btn_move_rec.setEnabled(True)  # Enable new button
             self.btn_show_data.setEnabled(True)  # Enable new button
             self.btn_set_zero_tcp.setEnabled(True)  # Enable new button
             self.btn_set_zero_force.setEnabled(True)  # Enable new button
@@ -127,61 +118,11 @@ class UR5eControlGUI(QWidget):
             self.rtde_r = None
             self.status_label.setText("Status: Disconnected")
             self.btn_start.setEnabled(False)
-            self.btn_move_rec.setEnabled(False)  # Disable new button
             self.btn_show_data.setEnabled(False)  # Disable new button
             self.btn_set_zero_tcp.setEnabled(False)  # Disable new button
             self.btn_set_zero_force.setEnabled(False)  # Disable new button
 
     def start_robot(self):
-        """Starts the robot movement without recording"""
-        if not self.rtde_c or not self.rtde_r:
-            QMessageBox.warning(self, "Warning", "Not connected to robot!")
-            return
-
-        try:
-            self.stop_event.clear()
-
-            # Get user inputs
-            amplitudes = [float(amp.strip()) for amp in self.input_amps.text().split(",")]
-            T_motion = float(self.input_T_motion.text())
-            steps_per_cycle = int(self.input_steps_per_cycle.text())
-            cycles = int(self.input_cycles.text())
-            speed = float(self.input_speed.text())
-            acceleration = float(self.input_acceleration.text())
-
-            freq_motion = 1 / T_motion
-            dt_motion = T_motion / steps_per_cycle
-            total_steps = cycles * steps_per_cycle
-
-            self.status_label.setText("Status: Running...")
-            self.btn_start.setEnabled(False)
-            self.btn_stop.setEnabled(True)
-
-            for amp in amplitudes:
-                if self.stop_event.is_set():
-                    break
-
-                self.status_label.setText(f"Status: Running... Amplitude: {amp} m")
-
-                # Start Thread
-                robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
-                robot_thread.start()
-                robot_thread.join()
-
-            self.status_label.setText("Status: Completed")
-            self.btn_start.setEnabled(True)
-            self.btn_stop.setEnabled(False)
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
-
-    def stop_robot(self):
-        """Stops the robot movement"""
-        self.stop_event.set()
-        self.status_label.setText("Status: Stopped")
-        self.btn_start.setEnabled(True)
-        self.btn_stop.setEnabled(False)
-
-    def move_and_record(self):
         """Starts the robot movement and logging"""
         if not self.rtde_c or not self.rtde_r:
             QMessageBox.warning(self, "Warning", "Not connected to robot!")
@@ -206,8 +147,8 @@ class UR5eControlGUI(QWidget):
             total_steps = cycles * steps_per_cycle
 
             self.status_label.setText("Status: Running and Recording...")
-            self.btn_move_rec.setEnabled(False)
-            self.btn_stop_move_rec.setEnabled(True)
+            self.btn_start.setEnabled(False)
+            self.btn_stop.setEnabled(True)
 
             for amp in amplitudes:
                 if self.stop_event.is_set():
@@ -229,17 +170,17 @@ class UR5eControlGUI(QWidget):
                 self.export_csv(amp)
 
             self.status_label.setText("Status: Completed")
-            self.btn_move_rec.setEnabled(True)
-            self.btn_stop_move_rec.setEnabled(False)
+            self.btn_start.setEnabled(True)
+            self.btn_stop.setEnabled(False)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
 
-    def stop_move_and_record(self):
+    def stop_robot(self):
         """Stops the robot movement and logging"""
         self.stop_event.set()
         self.status_label.setText("Status: Stopped")
-        self.btn_move_rec.setEnabled(True)
-        self.btn_stop_move_rec.setEnabled(False)
+        self.btn_start.setEnabled(True)
+        self.btn_stop.setEnabled(False)
         self.export_csv()
 
     def move_robot(self, amp, freq_motion, dt_motion, total_steps, speed, acceleration):
