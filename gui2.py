@@ -29,20 +29,23 @@ class UR5eControlGUI(QWidget):
 
     def initUI(self):
         self.setWindowTitle("UR5e Control GUI")
-        self.setGeometry(100, 100, 400, 550)
+        self.setGeometry(100, 100, 400, 600)  # Adjusted height for additional inputs
 
         layout = QVBoxLayout()
 
         # IP Address Input
         form_layout = QFormLayout()
-        self.input_ip = QLineEdit("192.168.1.102")  # Default IP
+        self.input_ip = QLineEdit("192.168.56.101")  # Default IP
         self.btn_connect = QPushButton("Connect to Robot")
         self.btn_connect.clicked.connect(self.connect_robot)
         form_layout.addRow("Robot IP:", self.input_ip)
         form_layout.addRow(self.btn_connect)
 
         # Input Fields for Motion Parameters
-        self.input_amp = QLineEdit("0.0025")
+        self.input_amp1 = QLineEdit("0.0025")
+        self.input_amp2 = QLineEdit("0.0050")
+        self.input_amp3 = QLineEdit("0.0075")
+        self.input_amp4 = QLineEdit("0.0100")
         self.input_T_motion = QLineEdit("0.05")
         self.input_steps_per_cycle = QLineEdit("1000")
         self.input_cycles = QLineEdit("5")
@@ -50,7 +53,10 @@ class UR5eControlGUI(QWidget):
         self.input_speed = QLineEdit("0.5")
         self.input_acceleration = QLineEdit("2.0")
 
-        form_layout.addRow("Amplitude (m):", self.input_amp)
+        form_layout.addRow("Amplitude 1 (m):", self.input_amp1)
+        form_layout.addRow("Amplitude 2 (m):", self.input_amp2)
+        form_layout.addRow("Amplitude 3 (m):", self.input_amp3)
+        form_layout.addRow("Amplitude 4 (m):", self.input_amp4)
         form_layout.addRow("T_motion (s):", self.input_T_motion)
         form_layout.addRow("Steps per cycle:", self.input_steps_per_cycle)
         form_layout.addRow("Cycles:", self.input_cycles)
@@ -110,7 +116,12 @@ class UR5eControlGUI(QWidget):
             self.data = []  # Clear previous data
 
             # Get user inputs
-            amps = [float(amp) for amp in self.input_amp.text().split(",")]
+            amps = [
+                float(self.input_amp1.text()),
+                float(self.input_amp2.text()),
+                float(self.input_amp3.text()),
+                float(self.input_amp4.text())
+            ]
             T_motion = float(self.input_T_motion.text())
             steps_per_cycle = int(self.input_steps_per_cycle.text())
             cycles = int(self.input_cycles.text())
@@ -215,7 +226,7 @@ class UR5eControlGUI(QWidget):
             QMessageBox.warning(self, "Warning", "No data to export!")
             return
 
-        amp = self.input_amp.text().replace(".", "_")
+        amp = self.input_amp1.text().replace(".", "_")
         filename = f"UR5e_Amp_{amp}.csv"
         count = 1
 
