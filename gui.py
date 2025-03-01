@@ -158,7 +158,7 @@ class UR5eControlGUI(QWidget):
                 break
 
             start_time = time.time()
-            z_offset = amp * math.cos(2 * math.pi * freq_motion * (i / total_steps)) - amp
+            z_offset = amp * math.sin(2 * math.pi * freq_motion * (i / total_steps))
             new_pose = start_pose.copy()
             new_pose[2] += z_offset
 
