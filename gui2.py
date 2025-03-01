@@ -170,11 +170,7 @@ class UR5eControlGUI(QWidget):
                 time.sleep(remaining_time)
 
         self.stop_event.set()
-        self.status_label.setText("Status: Stopped")
-        self.btn_start.setEnabled(True)
-        self.btn_stop.setEnabled(False)
-        self.timer.stop()
-        self.export_csv()
+        self.stop_robot()
 
     def log_data(self, dt_logging):
         """Logs robot data"""
