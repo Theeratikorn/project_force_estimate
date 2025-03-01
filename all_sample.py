@@ -23,6 +23,10 @@ class UR5eControlGUI(QWidget):
         self.stop_event = threading.Event()
         self.data = []
 
+        # Zero values
+        self.zero_tcp = None
+        self.zero_force = None
+
         # Timer for real-time updates
         self.timer = QTimer()
         # self.timer.timeout.connect(self.update_status)
@@ -42,7 +46,7 @@ class UR5eControlGUI(QWidget):
         form_layout.addRow(self.btn_connect)
 
         # Input Fields for Motion Parameters
-        self.input_amp = QLineEdit("0.0025")
+        self.input_amps = QLineEdit("0.0025, 0.005, 0.0075, 0.01")  # Default amplitudes
         self.input_T_motion = QLineEdit("0.05")
         self.input_steps_per_cycle = QLineEdit("1000")
         self.input_cycles = QLineEdit("5")
@@ -50,7 +54,7 @@ class UR5eControlGUI(QWidget):
         self.input_speed = QLineEdit("0.5")
         self.input_acceleration = QLineEdit("2.0")
 
-        form_layout.addRow("Amplitude (m):", self.input_amp)
+        form_layout.addRow("Amplitudes (m, comma-separated):", self.input_amps)
         form_layout.addRow("T_motion (s):", self.input_T_motion)
         form_layout.addRow("Steps per cycle:", self.input_steps_per_cycle)
         form_layout.addRow("Cycles:", self.input_cycles)
@@ -66,21 +70,33 @@ class UR5eControlGUI(QWidget):
         self.btn_stop = QPushButton("Stop Robot")
         self.btn_move_rec = QPushButton("Move and Record")  # New button
         self.btn_stop_move_rec = QPushButton("Stop Move and Record")  # New button
+        self.btn_show_data = QPushButton("Show Current Data")  # New button
+        self.btn_set_zero_tcp = QPushButton("Set Zero TCP")  # New button
+        self.btn_set_zero_force = QPushButton("Set Zero Force")  # New button
 
         self.btn_start.clicked.connect(self.start_robot)
         self.btn_stop.clicked.connect(self.stop_robot)
         self.btn_move_rec.clicked.connect(self.move_and_record)  # Connect new button
         self.btn_stop_move_rec.clicked.connect(self.stop_move_and_record)  # Connect new button
+        self.btn_show_data.clicked.connect(self.show_current_data)  # Connect new button
+        self.btn_set_zero_tcp.clicked.connect(self.set_zero_tcp)  # Connect new button
+        self.btn_set_zero_force.clicked.connect(self.set_zero_force)  # Connect new button
 
         self.btn_start.setEnabled(False)
         self.btn_stop.setEnabled(False)
         self.btn_move_rec.setEnabled(False)  # Disable new button
         self.btn_stop_move_rec.setEnabled(False)  # Disable new button
+        self.btn_show_data.setEnabled(False)  # Disable new button
+        self.btn_set_zero_tcp.setEnabled(False)  # Disable new button
+        self.btn_set_zero_force.setEnabled(False)  # Disable new button
 
         btn_layout.addWidget(self.btn_start)
         btn_layout.addWidget(self.btn_stop)
         btn_layout.addWidget(self.btn_move_rec)  # Add new button to layout
         btn_layout.addWidget(self.btn_stop_move_rec)  # Add new button to layout
+        btn_layout.addWidget(self.btn_show_data)  # Add new button to layout
+        btn_layout.addWidget(self.btn_set_zero_tcp)  # Add new button to layout
+        btn_layout.addWidget(self.btn_set_zero_force)  # Add new button to layout
         layout.addLayout(btn_layout)
 
         # Status Label
@@ -102,6 +118,9 @@ class UR5eControlGUI(QWidget):
             self.status_label.setText("Status: Connected")
             self.btn_start.setEnabled(True)
             self.btn_move_rec.setEnabled(True)  # Enable new button
+            self.btn_show_data.setEnabled(True)  # Enable new button
+            self.btn_set_zero_tcp.setEnabled(True)  # Enable new button
+            self.btn_set_zero_force.setEnabled(True)  # Enable new button
         except Exception as e:
             QMessageBox.critical(self, "Connection Error", f"Failed to connect to {ip}\nError: {e}")
             self.rtde_c = None
@@ -109,6 +128,9 @@ class UR5eControlGUI(QWidget):
             self.status_label.setText("Status: Disconnected")
             self.btn_start.setEnabled(False)
             self.btn_move_rec.setEnabled(False)  # Disable new button
+            self.btn_show_data.setEnabled(False)  # Disable new button
+            self.btn_set_zero_tcp.setEnabled(False)  # Disable new button
+            self.btn_set_zero_force.setEnabled(False)  # Disable new button
 
     def start_robot(self):
         """Starts the robot movement without recording"""
@@ -120,7 +142,7 @@ class UR5eControlGUI(QWidget):
             self.stop_event.clear()
 
             # Get user inputs
-            amp = float(self.input_amp.text())
+            amplitudes = [float(amp.strip()) for amp in self.input_amps.text().split(",")]
             T_motion = float(self.input_T_motion.text())
             steps_per_cycle = int(self.input_steps_per_cycle.text())
             cycles = int(self.input_cycles.text())
@@ -135,10 +157,16 @@ class UR5eControlGUI(QWidget):
             self.btn_start.setEnabled(False)
             self.btn_stop.setEnabled(True)
 
-            # Start Thread
-            robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
-            robot_thread.start()
-            robot_thread.join()
+            for amp in amplitudes:
+                if self.stop_event.is_set():
+                    break
+
+                self.status_label.setText(f"Status: Running... Amplitude: {amp} m")
+
+                # Start Thread
+                robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
+                robot_thread.start()
+                robot_thread.join()
 
             self.status_label.setText("Status: Completed")
             self.btn_start.setEnabled(True)
@@ -164,7 +192,7 @@ class UR5eControlGUI(QWidget):
             self.data = []  # Clear previous data
 
             # Get user inputs
-            amp = float(self.input_amp.text())
+            amplitudes = [float(amp.strip()) for amp in self.input_amps.text().split(",")]
             T_motion = float(self.input_T_motion.text())
             steps_per_cycle = int(self.input_steps_per_cycle.text())
             cycles = int(self.input_cycles.text())
@@ -181,17 +209,24 @@ class UR5eControlGUI(QWidget):
             self.btn_move_rec.setEnabled(False)
             self.btn_stop_move_rec.setEnabled(True)
 
-            # Start Threads
-            robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
-            log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
+            for amp in amplitudes:
+                if self.stop_event.is_set():
+                    break
 
-            robot_thread.start()
-            log_thread.start()
+                self.data = []  # Clear data for each amplitude
+                self.status_label.setText(f"Status: Running... Amplitude: {amp} m")
 
-            robot_thread.join()
-            log_thread.join()
+                # Start Threads
+                robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
+                log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
 
-            self.export_csv()
+                robot_thread.start()
+                log_thread.start()
+
+                robot_thread.join()
+                log_thread.join()
+
+                self.export_csv(amp)
 
             self.status_label.setText("Status: Completed")
             self.btn_move_rec.setEnabled(True)
@@ -242,6 +277,11 @@ class UR5eControlGUI(QWidget):
             actual_joint_positions = self.rtde_r.getActualQ()
             actual_tcp_force = self.rtde_r.getActualTCPForce()
 
+            if self.zero_tcp:
+                actual_tcp_pose = [actual_tcp_pose[i] - self.zero_tcp[i] for i in range(6)]
+            if self.zero_force:
+                actual_tcp_force = [actual_tcp_force[i] - self.zero_force[i] for i in range(6)]
+
             timestamp = time.time() - start_global_time
             self.data.append([timestamp, *actual_joint_positions, *actual_tcp_pose, *actual_tcp_force])
 
@@ -260,18 +300,66 @@ class UR5eControlGUI(QWidget):
         else:
             self.data_label.setText("Data: N/A")
 
-    def export_csv(self):
+    def show_current_data(self):
+        """Shows the current TCP position and force"""
+        if not self.rtde_r:
+            QMessageBox.warning(self, "Warning", "Not connected to robot!")
+            return
+
+        try:
+            actual_tcp_pose = self.rtde_r.getActualTCPPose()
+            actual_tcp_force = self.rtde_r.getActualTCPForce()
+
+            tcp_x, tcp_y, tcp_z = actual_tcp_pose[:3]
+            force_x, force_y, force_z = actual_tcp_force[:3]
+
+            QMessageBox.information(self, "Current Data", 
+                                    f"TCP Position: (X: {tcp_x:.3f}, Y: {tcp_y:.3f}, Z: {tcp_z:.3f})\n"
+                                    f"TCP Force: (X: {force_x:.3f}, Y: {force_y:.3f}, Z: {force_z:.3f})")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to retrieve data: {str(e)}")
+
+    def set_zero_tcp(self):
+        """Sets the current TCP position as zero"""
+        if not self.rtde_r:
+            QMessageBox.warning(self, "Warning", "Not connected to robot!")
+            return
+
+        try:
+            self.zero_tcp = self.rtde_r.getActualTCPPose()
+            QMessageBox.information(self, "Set Zero TCP", "Current TCP position set as zero.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to set zero TCP: {str(e)}")
+
+    def set_zero_force(self):
+        """Sets the current TCP force as zero"""
+        if not self.rtde_r:
+            QMessageBox.warning(self, "Warning", "Not connected to robot!")
+            return
+
+        try:
+            self.zero_force = self.rtde_r.getActualTCPForce()
+            QMessageBox.information(self, "Set Zero Force", "Current TCP force set as zero.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to set zero force: {str(e)}")
+
+    def export_csv(self, amp=None):
         """Exports collected data to CSV"""
         if not self.data:
             QMessageBox.warning(self, "Warning", "No data to export!")
             return
 
-        amp = self.input_amp.text().replace(".", "_")
-        filename = f"UR5e_Amp_{amp}.csv"
+        if amp is not None:
+            amp_str = str(amp).replace(".", "_")
+            filename = f"UR5e_Amp_{amp_str}.csv"
+        else:
+            amp = self.input_amp.text().replace(".", "_")
+            filename = f"UR5e_Amp_{amp}.csv"
+        
         count = 1
 
         while os.path.exists(filename):
-            filename = f"UR5e_Amp_{amp}_{count}.csv"
+            filename = f"{filename.split('.')[0]}_{count}.csv"
             count += 1
 
         columns = ["timestamp"] + [f"position_{i}" for i in range(6)] + \
