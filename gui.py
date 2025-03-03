@@ -29,7 +29,7 @@ class UR5eControlGUI(QWidget):
 
     def initUI(self):
         self.setWindowTitle("UR5e Control GUI")
-        self.setGeometry(100, 100, 400, 550)
+        self.setGeometry(100, 100, 400, 600)
 
         layout = QVBoxLayout()
 
@@ -42,7 +42,10 @@ class UR5eControlGUI(QWidget):
         form_layout.addRow(self.btn_connect)
 
         # Input Fields for Motion Parameters
-        self.input_amp = QLineEdit("0.0025")
+        self.input_amp1 = QLineEdit("0.0025")
+        self.input_amp2 = QLineEdit("0.005")
+        self.input_amp3 = QLineEdit("0.0075")
+        self.input_amp4 = QLineEdit("0.01")
         self.input_T_motion = QLineEdit("0.05")
         self.input_steps_per_cycle = QLineEdit("1000")
         self.input_cycles = QLineEdit("5")
@@ -50,7 +53,10 @@ class UR5eControlGUI(QWidget):
         self.input_speed = QLineEdit("0.5")
         self.input_acceleration = QLineEdit("2.0")
 
-        form_layout.addRow("Amplitude (m):", self.input_amp)
+        form_layout.addRow("Amplitude 1 (m):", self.input_amp1)
+        form_layout.addRow("Amplitude 2 (m):", self.input_amp2)
+        form_layout.addRow("Amplitude 3 (m):", self.input_amp3)
+        form_layout.addRow("Amplitude 4 (m):", self.input_amp4)
         form_layout.addRow("T_motion (s):", self.input_T_motion)
         form_layout.addRow("Steps per cycle:", self.input_steps_per_cycle)
         form_layout.addRow("Cycles:", self.input_cycles)
@@ -110,7 +116,12 @@ class UR5eControlGUI(QWidget):
             self.data = []  # Clear previous data
 
             # Get user inputs
-            amp = float(self.input_amp.text())
+            amps = [
+                float(self.input_amp1.text()),
+                float(self.input_amp2.text()),
+                float(self.input_amp3.text()),
+                float(self.input_amp4.text())
+            ]
             T_motion = float(self.input_T_motion.text())
             steps_per_cycle = int(self.input_steps_per_cycle.text())
             cycles = int(self.input_cycles.text())
@@ -128,14 +139,25 @@ class UR5eControlGUI(QWidget):
             self.btn_stop.setEnabled(True)
 
             # Start Threads
-            robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
-            log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
+            for amp in amps:
+                if self.stop_event.is_set():
+                    break
 
-            robot_thread.start()
-            log_thread.start()
+                self.data = []  # Clear data for each amplitude
+                robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
+                log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
 
-            self.timer.timeout.connect(self.update_status)
-            self.timer.start(500)
+                robot_thread.start()
+                log_thread.start()
+
+                robot_thread.join()
+                log_thread.join()
+
+                self.export_csv(amp)
+
+            self.status_label.setText("Status: Completed")
+            self.btn_start.setEnabled(True)
+            self.btn_stop.setEnabled(False)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
 
@@ -206,18 +228,18 @@ class UR5eControlGUI(QWidget):
         else:
             self.data_label.setText("Data: N/A")
 
-    def export_csv(self):
+    def export_csv(self, amp):
         """Exports collected data to CSV"""
         if not self.data:
             QMessageBox.warning(self, "Warning", "No data to export!")
             return
 
-        amp = self.input_amp.text().replace(".", "_")
-        filename = f"UR5e_Amp_{amp}.csv"
+        amp_str = str(amp).replace(".", "_")
+        filename = f"UR5e_Amp_{amp_str}.csv"
         count = 1
 
         while os.path.exists(filename):
-            filename = f"UR5e_Amp_{amp}_{count}.csv"
+            filename = f"UR5e_Amp_{amp_str}_{count}.csv"
             count += 1
 
         columns = ["timestamp"] + [f"position_{i}" for i in range(6)] + \
