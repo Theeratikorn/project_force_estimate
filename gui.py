@@ -182,20 +182,13 @@ class UR5eControlGUI(QWidget):
             actual_joint_positions = self.rtde_r.getActualQ()
             actual_tcp_force = self.rtde_r.getActualTCPForce()
             actual_joint_speeds = self.rtde_r.getActualQd()
-            actual_joint_efforts = self.rtde_r.getActualCurrent()
-            tool_current = self.rtde_r.getActualToolCurrent()
-            speed_scaling = self.rtde_r.getSpeedScaling()
+            actual_joint_efforts = self.rtde_r.getActualCurrentQ()
             tcp_speed = self.rtde_r.getActualTCPSpeed()
-            tcp_wrench = self.rtde_r.getActualTCPWrench()
-            joint_temperatures = self.rtde_r.getJointTemperatures()
-            robot_mode = self.rtde_r.getRobotMode()
-            safety_mode = self.rtde_r.getSafetyMode()
 
             timestamp = time.time() - start_global_time
             self.data.append([
                 timestamp, *actual_joint_positions, *actual_joint_speeds, *actual_joint_efforts,
-                *actual_tcp_force, *actual_tcp_pose, tool_current, speed_scaling, *tcp_speed,
-                *tcp_wrench, *joint_temperatures, robot_mode, safety_mode
+                *actual_tcp_force, *actual_tcp_pose, *tcp_speed
             ])
 
             elapsed_time = time.time() - start_time
@@ -231,9 +224,7 @@ class UR5eControlGUI(QWidget):
                   [f"velocity_{i}" for i in range(6)] + [f"effort_{i}" for i in range(6)] + \
                   ["force_x", "force_y", "force_z", "torque_x", "torque_y", "torque_z"] + \
                   ["tcp_pos_x", "tcp_pos_y", "tcp_pos_z", "tcp_ori_x", "tcp_ori_y", "tcp_ori_z", "tcp_ori_w"] + \
-                  ["tool_current", "speed_scaling", "tcp_speed_x", "tcp_speed_y", "tcp_speed_z"] + \
-                  ["wrench_force_x", "wrench_force_y", "wrench_force_z", "wrench_torque_x", "wrench_torque_y", "wrench_torque_z"] + \
-                  [f"joint_temp_{i}" for i in range(6)] + ["robot_mode", "safety_mode"]
+                  ["tcp_speed_x", "tcp_speed_y", "tcp_speed_z"]
 
         df = pd.DataFrame(self.data, columns=columns)
         df.to_csv(filename, index=False)
