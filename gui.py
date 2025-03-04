@@ -227,7 +227,7 @@ class UR5eControlGUI(QWidget):
                 *actual_control_current, *actual_control_voltage, *actual_tcp_force, *actual_tcp_pose, *actual_tcp_speed,
                 *target_joint_positions, *target_joint_speeds, *target_joint_accelerations,
                 *target_joint_moments, *target_joint_currents, #*target_joint_voltage,
-                *actual_momentums, *target_tcp_pose, *target_tcp_speed
+                 actual_momentums, *target_tcp_pose, *target_tcp_speed
             ])
 
             elapsed_time = time.time() - start_time
