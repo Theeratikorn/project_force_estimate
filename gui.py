@@ -289,18 +289,18 @@ class UR5eControlGUI(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to zero force sensor: {str(e)}")
 
-    def export_csv(self, amp):
+    def export_csv(self):
         """Exports collected data to CSV"""
         if not self.data:
             QMessageBox.warning(self, "Warning", "No data to export!")
             return
 
-        amp_str = str(amp).replace(".", "_")
-        filename = f"UR5e_Amp_{amp_str}.csv"
+        amp = self.input_amp1.text().replace(".", "_")
+        filename = f"UR5e_Amp_{amp}.csv"
         count = 1
 
         while os.path.exists(filename):
-            filename = f"UR5e_Amp_{amp_str}_{count}.csv"
+            filename = f"UR5e_Amp_{amp}_{count}.csv"
             count += 1
 
         columns = ["timestamp"] + \
