@@ -208,7 +208,7 @@ class UR5eControlGUI(QWidget):
                     time.sleep(remaining_time)
 
             QMessageBox.information(self, "Move Robot", "Robot movement completed.")
-            self.stop_event.set()
+            #self.stop_event.set()
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to move robot: {str(e)}")
