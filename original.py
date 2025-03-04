@@ -160,11 +160,12 @@ class UR5eControlGUI(QWidget):
             if self.stop_event.is_set():
                 break
 
-            
+            print('doing z offset')
             z_offset = amp * math.sin(2 * math.pi * freq_motion * (i / total_steps))
             new_pose = start_pose.copy()
             new_pose[2] += z_offset
 
+            print('doing moveL')
             self.rtde_c.moveL(new_pose, speed, acceleration)
 
             elapsed_time = time.time() - start_time
