@@ -154,10 +154,13 @@ class UR5eControlGUI(QWidget):
         start_pose = self.rtde_r.getActualTCPPose()
         
         for i in range(total_steps):
+            start_time = time.time()
+
+            print(i)
             if self.stop_event.is_set():
                 break
 
-            start_time = time.time()
+            
             z_offset = amp * math.sin(2 * math.pi * freq_motion * (i / total_steps))
             new_pose = start_pose.copy()
             new_pose[2] += z_offset
@@ -166,6 +169,12 @@ class UR5eControlGUI(QWidget):
 
             elapsed_time = time.time() - start_time
             remaining_time = dt_motion - elapsed_time
+            print("remaining Time")
+            print(remaining_time)
+            print("dt_motion")
+            print(dt_motion)
+            print("Elapsed Time")
+            print(elapsed_time)
             if (remaining_time > 0):
                 time.sleep(remaining_time)
 
