@@ -241,7 +241,6 @@ class UR5eControlGUI(QWidget):
 
         columns = ["timestamp"] + [f"position_{i}" for i in range(6)] + \
                   [f"speed_{i}" for i in range(6)] + \
-                  # [f"effort_{i}" for i in range(6)] + \
                   ["tcp_pos_x", "tcp_pos_y", "tcp_pos_z", "tcp_ori_x", "tcp_ori_y", "tcp_ori_z"] + \
                   ["tcp_speed_x", "tcp_speed_y", "tcp_speed_z", "tcp_speed_rx", "tcp_speed_ry", "tcp_speed_rz"] + \
                   ["force_x", "force_y", "force_z", "torque_x", "torque_y", "torque_z"]
