@@ -129,7 +129,7 @@ class UR5eControlGUI(QWidget):
 
             # Start Threads
             robot_thread = threading.Thread(target=self.move_robot, args=(amp, freq_motion, dt_motion, total_steps, speed, acceleration))
-            robot_thread2 = threading.Thread(target=self.move_robot, args=(amp+0.0025, freq_motion, dt_motion, total_steps, speed, acceleration))
+            #robot_thread2 = threading.Thread(target=self.move_robot, args=(amp+0.0025, freq_motion, dt_motion, total_steps, speed, acceleration))
             
             log_thread = threading.Thread(target=self.log_data, args=(dt_logging,))
 
