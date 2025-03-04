@@ -209,7 +209,7 @@ class UR5eControlGUI(QWidget):
 
             QMessageBox.information(self, "Move Robot", "Robot movement completed.")
             self.stop_event.set()
-            
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to move robot: {str(e)}")
 
@@ -226,9 +226,10 @@ class UR5eControlGUI(QWidget):
                 actual_tcp_pose = self.rtde_r.getActualTCPPose()
                 actual_tcp_speed = self.rtde_r.getActualTCPSpeed()
                 actual_tcp_force = self.rtde_r.getActualTCPForce()
+                zero_actual_tcp_pose = actual_tcp_pose
 
                 if self.initial_tcp_pose:
-                    actual_tcp_pose = [actual_tcp_pose[i] - self.initial_tcp_pose[i] for i in range(6)]
+                    zero_actual_tcp_pose = [actual_tcp_pose[i] - self.initial_tcp_pose[i] for i in range(6)]
 
                 target_joint_positions = self.rtde_r.getTargetQ()
                 target_joint_speeds = self.rtde_r.getTargetQd()
@@ -247,7 +248,7 @@ class UR5eControlGUI(QWidget):
                     *actual_tcp_force, *actual_tcp_pose, *actual_tcp_speed,
                     *target_joint_positions, *target_joint_speeds, *target_joint_accelerations,
                     *target_joint_moments, *target_joint_currents, # *target_joint_voltage,
-                    *target_tcp_pose, *target_tcp_speed
+                    *target_tcp_pose, *target_tcp_speed, *zero_actual_tcp_pose
                 ])
 
                 elapsed_time = time.time() - start_time
@@ -323,7 +324,8 @@ class UR5eControlGUI(QWidget):
             [f"target_moment_{i}" for i in range(6)] + \
             [f"target_current_{i}" for i in range(6)] + \
             ["target_tcp_pos_x", "target_tcp_pos_y", "target_tcp_pos_z", "target_tcp_ori_x", "target_tcp_ori_y", "target_tcp_ori_z"] + \
-            ["target_tcp_speed_x", "target_tcp_speed_y", "target_tcp_speed_z", "target_tcp_speed_rx", "target_tcp_speed_ry", "target_tcp_speed_rz"]
+            ["target_tcp_speed_x", "target_tcp_speed_y", "target_tcp_speed_z", "target_tcp_speed_rx", "target_tcp_speed_ry", "target_tcp_speed_rz"] + \
+            ["zero_tcp_pos_x", "zero_tcp_pos_y", "zero_tcp_pos_z", "zero_tcp_ori_x", "zero_tcp_ori_y", "zero_tcp_ori_z"]
 
         df = pd.DataFrame(self.data, columns=columns)
         df.to_csv(filename, index=False)
