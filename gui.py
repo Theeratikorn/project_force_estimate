@@ -54,9 +54,9 @@ class UR5eControlGUI(QWidget):
         self.input_acceleration = QLineEdit("2.0")
 
         form_layout.addRow("Amplitude 1 (m):", self.input_amp1)
-        form_layout.addRow("Amplitude 2 (m):", self.input_amp2)
-        form_layout.addRow("Amplitude 3 (m):", self.input_amp3)
-        form_layout.addRow("Amplitude 4 (m):", self.input_amp4)
+        # form_layout.addRow("Amplitude 2 (m):", self.input_amp2)
+        # form_layout.addRow("Amplitude 3 (m):", self.input_amp3)
+        # form_layout.addRow("Amplitude 4 (m):", self.input_amp4)
         form_layout.addRow("T_motion (s):", self.input_T_motion)
         form_layout.addRow("Steps per cycle:", self.input_steps_per_cycle)
         form_layout.addRow("Cycles:", self.input_cycles)
@@ -118,9 +118,9 @@ class UR5eControlGUI(QWidget):
             # Get user inputs
             amps = [
                 float(self.input_amp1.text()),
-                float(self.input_amp2.text()),
-                float(self.input_amp3.text()),
-                float(self.input_amp4.text())
+                # float(self.input_amp2.text()),
+                # float(self.input_amp3.text()),
+                # float(self.input_amp4.text())
             ]
             T_motion = float(self.input_T_motion.text())
             steps_per_cycle = int(self.input_steps_per_cycle.text())
