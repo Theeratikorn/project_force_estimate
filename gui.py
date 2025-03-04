@@ -168,10 +168,11 @@ class UR5eControlGUI(QWidget):
                 # log_thread.join()
 
                 # self.export_csv(amp)
-
-            self.status_label.setText("Status: Completed")
-            self.btn_start.setEnabled(True)
-            self.btn_stop.setEnabled(False)
+            self.timer.timeout.connect(self.update_status)
+            self.timer.start(500)
+            # self.status_label.setText("Status: Completed")
+            # self.btn_start.setEnabled(True)
+            # self.btn_stop.setEnabled(False)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to start: {str(e)}")
 
