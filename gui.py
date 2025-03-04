@@ -22,6 +22,7 @@ class UR5eControlGUI(QWidget):
         self.rtde_r = None
         self.stop_event = threading.Event()
         self.data = []
+        self.initial_tcp_pose = None  # To store the initial TCP position
 
         # Timer for real-time updates
         self.timer = QTimer()
@@ -66,6 +67,16 @@ class UR5eControlGUI(QWidget):
 
         layout.addLayout(form_layout)
 
+        # Zero TCP Button
+        self.btn_zero_tcp = QPushButton("Zero TCP")
+        self.btn_zero_tcp.clicked.connect(self.zero_tcp)
+        layout.addWidget(self.btn_zero_tcp)
+
+        # Zero Force Button
+        self.btn_zero_force = QPushButton("Zero Force")
+        self.btn_zero_force.clicked.connect(self.zero_force)
+        layout.addWidget(self.btn_zero_force)
+
         # Start/Stop Buttons
         btn_layout = QHBoxLayout()
         self.btn_start = QPushButton("Start Robot")
@@ -99,11 +110,14 @@ class UR5eControlGUI(QWidget):
             self.rtde_r = rtde_receive.RTDEReceiveInterface(ip)
             self.status_label.setText("Status: Connected")
             self.btn_start.setEnabled(True)
+            self.btn_stop.setEnabled(True)  # Enable stop button when connected
         except Exception as e:
             QMessageBox.critical(self, "Connection Error", f"Failed to connect to {ip}\nError: {e}")
             self.rtde_c = None
             self.rtde_r = None
             self.status_label.setText("Status: Disconnected")
+            self.btn_start.setEnabled(False)
+            self.btn_stop.setEnabled(False)  # Disable stop button if connection fails
 
     def start_robot(self):
         """Starts the robot movement and logging"""
@@ -211,6 +225,9 @@ class UR5eControlGUI(QWidget):
                 actual_tcp_speed = self.rtde_r.getActualTCPSpeed()
                 actual_tcp_force = self.rtde_r.getActualTCPForce()
 
+                if self.initial_tcp_pose:
+                    actual_tcp_pose = [actual_tcp_pose[i] - self.initial_tcp_pose[i] for i in range(6)]
+
                 target_joint_positions = self.rtde_r.getTargetQ()
                 target_joint_speeds = self.rtde_r.getTargetQd()
                 target_joint_accelerations = self.rtde_r.getTargetQdd()
@@ -247,6 +264,30 @@ class UR5eControlGUI(QWidget):
             self.data_label.setText(f"TCP: ({tcp_x:.3f}, {tcp_y:.3f}, {tcp_z:.3f}), Force: ({force_x:.3f}, {force_y:.3f}, {force_z:.3f})")
         else:
             self.data_label.setText("Data: N/A")
+
+    def zero_tcp(self):
+        """Records the initial TCP position"""
+        if not self.rtde_r:
+            QMessageBox.warning(self, "Warning", "Not connected to robot!")
+            return
+
+        try:
+            self.initial_tcp_pose = self.rtde_r.getActualTCPPose()
+            QMessageBox.information(self, "Zero TCP", "Initial TCP position recorded.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to record initial TCP position: {str(e)}")
+
+    def zero_force(self):
+        """Calls the zeroFtSensor method to zero the force sensor"""
+        if not self.rtde_c:
+            QMessageBox.warning(self, "Warning", "Not connected to robot!")
+            return
+
+        try:
+            self.rtde_c.zeroFtSensor()
+            QMessageBox.information(self, "Zero Force", "Force sensor zeroed.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to zero force sensor: {str(e)}")
 
     def export_csv(self, amp):
         """Exports collected data to CSV"""
