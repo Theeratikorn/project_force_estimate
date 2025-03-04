@@ -185,11 +185,6 @@ class UR5eControlGUI(QWidget):
             actual_tcp_speed = self.rtde_r.getActualTCPSpeed()
             actual_tcp_force = self.rtde_r.getActualTCPForce()
 
-            target_joint_positions = self.rtde_r.getTargetQ()
-            target_joint_speeds = self.rtde_r.getTargetQd()
-            target_joint_accelerations = self.rtde_r.getTargetQdd()
-            target_joint_moments = self.rtde_r.getTargetMoment()
-            target_joint_currents = self.rtde_r.getTargetCurrent()
             target_tcp_pose = self.rtde_r.getTargetTCPPose()
             target_tcp_speed = self.rtde_r.getTargetTCPSpeed()
 
@@ -197,8 +192,6 @@ class UR5eControlGUI(QWidget):
             self.data.append([
                     timestamp, *actual_joint_positions, *actual_joint_speeds, *actual_joint_efforts,
                     *actual_tcp_force, *actual_tcp_pose, *actual_tcp_speed,
-                    *target_joint_positions, *target_joint_speeds, *target_joint_accelerations,
-                    *target_joint_moments, *target_joint_currents, 
                     *target_tcp_pose, *target_tcp_speed
                 ])
             elapsed_time = time.time() - start_time
@@ -237,11 +230,6 @@ class UR5eControlGUI(QWidget):
             ["actual_force_x", "actual_force_y", "actual_force_z", "actual_torque_x", "actual_torque_y", "actual_torque_z"] + \
             ["actual_tcp_pos_x", "actual_tcp_pos_y", "actual_tcp_pos_z", "actual_tcp_ori_x", "actual_tcp_ori_y", "actual_tcp_ori_z"] + \
             ["actual_tcp_speed_x", "actual_tcp_speed_y", "actual_tcp_speed_z", "actual_tcp_speed_rx", "actual_tcp_speed_ry", "actual_tcp_speed_rz"] + \
-            [f"target_position_{i}" for i in range(6)] + \
-            [f"target_velocity_{i}" for i in range(6)] + \
-            [f"target_acceleration_{i}" for i in range(6)] + \
-            [f"target_moment_{i}" for i in range(6)] + \
-            [f"target_current_{i}" for i in range(6)] + \
             ["target_tcp_pos_x", "target_tcp_pos_y", "target_tcp_pos_z", "target_tcp_ori_x", "target_tcp_ori_y", "target_tcp_ori_z"] + \
             ["target_tcp_speed_x", "target_tcp_speed_y", "target_tcp_speed_z", "target_tcp_speed_rx", "target_tcp_speed_ry", "target_tcp_speed_rz"]
 
