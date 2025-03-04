@@ -257,11 +257,17 @@ class UR5eControlGUI(QWidget):
 
     def update_status(self):
         """Updates the GUI with the latest recorded data"""
-        if self.data:
-            latest_data = self.data[-1]
-            tcp_x, tcp_y, tcp_z = latest_data[7:10]
-            force_x, force_y, force_z = latest_data[13:16]
-            self.data_label.setText(f"TCP: ({tcp_x:.3f}, {tcp_y:.3f}, {tcp_z:.3f}), Force: ({force_x:.3f}, {force_y:.3f}, {force_z:.3f})")
+        if self.rtde_r:
+            try:
+                actual_tcp_pose = self.rtde_r.getActualTCPPose()
+                actual_tcp_force = self.rtde_r.getActualTCPForce()
+
+                tcp_x, tcp_y, tcp_z = actual_tcp_pose[:3]
+                force_x, force_y, force_z = actual_tcp_force[:3]
+
+                self.data_label.setText(f"TCP: ({tcp_x:.3f}, {tcp_y:.3f}, {tcp_z:.3f}), Force: ({force_x:.3f}, {force_y:.3f}, {force_z:.3f})")
+            except Exception as e:
+                self.data_label.setText(f"Error: {str(e)}")
         else:
             self.data_label.setText("Data: N/A")
 
