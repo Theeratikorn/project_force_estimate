@@ -173,67 +173,73 @@ class UR5eControlGUI(QWidget):
 
     def move_robot(self, amp, freq_motion, dt_motion, total_steps, speed, acceleration):
         """Moves the robot in a sinusoidal Z motion"""
-        start_pose = self.rtde_r.getActualTCPPose()
-        
-        for i in range(total_steps):
-            if self.stop_event.is_set():
-                break
+        try:
+            start_pose = self.rtde_r.getActualTCPPose()
+            
+            for i in range(total_steps):
+                if self.stop_event.is_set():
+                    break
 
-            start_time = time.time()
-            z_offset = amp * math.cos(2 * math.pi * freq_motion * (i / total_steps)) - amp
-            new_pose = start_pose.copy()
-            new_pose[2] += z_offset
+                start_time = time.time()
+                z_offset = amp * math.cos(2 * math.pi * freq_motion * (i / total_steps)) - amp
+                new_pose = start_pose.copy()
+                new_pose[2] += z_offset
 
-            self.rtde_c.moveL(new_pose, speed, acceleration)
+                self.rtde_c.moveL(new_pose, speed, acceleration)
 
-            elapsed_time = time.time() - start_time
-            remaining_time = dt_motion - elapsed_time
-            if (remaining_time > 0):
-                time.sleep(remaining_time)
+                elapsed_time = time.time() - start_time
+                remaining_time = dt_motion - elapsed_time
+                if (remaining_time > 0):
+                    time.sleep(remaining_time)
 
-        self.stop_event.set()
+            self.stop_event.set()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to move robot: {str(e)}")
 
     def log_data(self, dt_logging):
         """Logs robot data"""
-        start_global_time = time.time()
-        
-        while not self.stop_event.is_set():
-            start_time = time.time()
+        try:
+            start_global_time = time.time()
+            
+            while not self.stop_event.is_set():
+                start_time = time.time()
 
-            actual_joint_positions = self.rtde_r.getActualQ()
-            actual_joint_speeds = self.rtde_r.getActualQd()
-            actual_joint_efforts = self.rtde_c.getJointTorques()
-            actual_control_current = self.rtde_r.getActualCurrent()
-            actual_control_voltage = self.rtde_r.getActualJointVoltage()
-            actual_tcp_pose = self.rtde_r.getActualTCPPose()
-            actual_tcp_speed = self.rtde_r.getActualTCPSpeed()
-            actual_tcp_force = self.rtde_r.getActualTCPForce()
+                actual_joint_positions = self.rtde_r.getActualQ()
+                actual_joint_speeds = self.rtde_r.getActualQd()
+                actual_joint_efforts = self.rtde_c.getJointTorques()
+                actual_control_current = self.rtde_r.getActualCurrent()
+                actual_control_voltage = self.rtde_r.getActualJointVoltage()
+                actual_tcp_pose = self.rtde_r.getActualTCPPose()
+                actual_tcp_speed = self.rtde_r.getActualTCPSpeed()
+                actual_tcp_force = self.rtde_r.getActualTCPForce()
 
-            target_joint_positions = self.rtde_r.getTargetQ()
-            target_joint_speeds = self.rtde_r.getTargetQd()
-            target_joint_accelerations = self.rtde_r.getTargetQdd()
-            target_joint_moments = self.rtde_r.getTargetMoment()
+                target_joint_positions = self.rtde_r.getTargetQ()
+                target_joint_speeds = self.rtde_r.getTargetQd()
+                target_joint_accelerations = self.rtde_r.getTargetQdd()
+                target_joint_moments = self.rtde_r.getTargetMoment()
 
-            target_joint_currents = self.rtde_r.getTargetCurrent()
-            # target_joint_voltage = self.rtde_r.getTargetVoltage()
+                target_joint_currents = self.rtde_r.getTargetCurrent()
+                # target_joint_voltage = self.rtde_r.getTargetVoltage()
 
-            actual_momentums = self.rtde_r.getActualMomentum()
-            target_tcp_pose = self.rtde_r.getTargetTCPPose()
-            target_tcp_speed = self.rtde_r.getTargetTCPSpeed()
+                actual_momentums = self.rtde_r.getActualMomentum()
+                target_tcp_pose = self.rtde_r.getTargetTCPPose()
+                target_tcp_speed = self.rtde_r.getTargetTCPSpeed()
 
-            timestamp = time.time() - start_global_time
-            self.data.append([
-                timestamp, *actual_joint_positions, *actual_joint_speeds, *actual_joint_efforts,
-                *actual_control_current, *actual_control_voltage, *actual_tcp_force, *actual_tcp_pose, *actual_tcp_speed,
-                *target_joint_positions, *target_joint_speeds, *target_joint_accelerations,
-                *target_joint_moments, *target_joint_currents, #*target_joint_voltage,
-                 actual_momentums, *target_tcp_pose, *target_tcp_speed
-            ])
+                timestamp = time.time() - start_global_time
+                self.data.append([
+                    timestamp, *actual_joint_positions, *actual_joint_speeds, *actual_joint_efforts,
+                    *actual_control_current, *actual_control_voltage, *actual_tcp_force, *actual_tcp_pose, *actual_tcp_speed,
+                    *target_joint_positions, *target_joint_speeds, *target_joint_accelerations,
+                    *target_joint_moments, *target_joint_currents, #*target_joint_voltage,
+                     actual_momentums, *target_tcp_pose, *target_tcp_speed
+                ])
 
-            elapsed_time = time.time() - start_time
-            remaining_time = dt_logging - elapsed_time
-            if remaining_time > 0:
-                time.sleep(remaining_time)
+                elapsed_time = time.time() - start_time
+                remaining_time = dt_logging - elapsed_time
+                if remaining_time > 0:
+                    time.sleep(remaining_time)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to log data: {str(e)}")
 
     def update_status(self):
         """Updates the GUI with the latest recorded data"""
