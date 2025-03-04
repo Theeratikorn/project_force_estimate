@@ -202,14 +202,11 @@ class UR5eControlGUI(QWidget):
             actual_joint_efforts = self.rtde_c.getJointTorques()
             actual_tcp_speed = self.rtde_r.getActualTCPSpeed()
             actual_tcp_force = self.rtde_r.getActualTCPForce()
-            target_tcp_pose = self.rtde_r.getTargetTCPPose()
-            target_tcp_speed = self.rtde_r.getTargetTCPSpeed()
 
             timestamp = time.time() - start_global_time
             self.data.append([
                 timestamp, *actual_joint_positions, *actual_joint_speeds, *actual_joint_efforts, 
-                *actual_tcp_pose, *actual_tcp_speed, *actual_tcp_force, 
-                *target_tcp_pose, *target_tcp_speed
+                *actual_tcp_pose, *actual_tcp_speed, *actual_tcp_force
             ])
 
             elapsed_time = time.time() - start_time
@@ -245,9 +242,7 @@ class UR5eControlGUI(QWidget):
                   [f"speed_{i}" for i in range(6)] + [f"effort_{i}" for i in range(6)] + \
                   ["tcp_pos_x", "tcp_pos_y", "tcp_pos_z", "tcp_ori_x", "tcp_ori_y", "tcp_ori_z"] + \
                   ["tcp_speed_x", "tcp_speed_y", "tcp_speed_z", "tcp_speed_rx", "tcp_speed_ry", "tcp_speed_rz"] + \
-                  ["force_x", "force_y", "force_z", "torque_x", "torque_y", "torque_z"] + \
-                  ["target_tcp_pos_x", "target_tcp_pos_y", "target_tcp_pos_z", "target_tcp_ori_x", "target_tcp_ori_y", "target_tcp_ori_z"] + \
-                  ["target_tcp_speed_x", "target_tcp_speed_y", "target_tcp_speed_z", "target_tcp_speed_rx", "target_tcp_speed_ry", "target_tcp_speed_rz"]
+                  ["force_x", "force_y", "force_z", "torque_x", "torque_y", "torque_z"]
 
         df = pd.DataFrame(self.data, columns=columns)
         df.to_csv(filename, index=False)
