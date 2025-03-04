@@ -97,56 +97,6 @@ def log_data():
         if remaining_time > 0:
             time.sleep(remaining_time)
 
-# -------------------------- ฟังก์ชันดึงข้อมูลทั้งหมดจากหุ่นยนต์ --------------------------
-def get_all_data_from_robot():
-    # อ่านค่าปัจจุบันจาก UR5e
-    actual_tcp_pose = rtde_r.getActualTCPPose()
-    actual_joint_positions = rtde_r.getActualQ()  # Joint Positions
-    actual_joint_velocities = rtde_r.getActualQd()  # Joint Velocities
-    actual_joint_torques = rtde_r.getActualCurrentQ()  # Joint Effort (Torques)
-    actual_tcp_force = rtde_r.getActualTCPForce()  # TCP Forces
-    tool_current = rtde_r.getActualToolCurrent()  # Tool Current
-    speed_scaling = rtde_r.getSpeedScaling()  # Speed Scaling
-    tcp_speed = rtde_r.getActualTCPSpeed()  # TCP Speed
-    tcp_wrench = rtde_r.getActualTCPWrench()  # TCP Wrench
-    joint_temperatures = rtde_r.getJointTemperatures()  # Joint Temperatures
-    robot_mode = rtde_r.getRobotMode()  # Robot Mode
-    safety_mode = rtde_r.getSafetyMode()  # Safety Mode
-
-    # บันทึกข้อมูล
-    data = [
-        *actual_joint_positions, 
-        *actual_joint_velocities, 
-        *actual_joint_torques, 
-        *actual_tcp_force,
-        *actual_tcp_pose, 
-        tool_current, 
-        speed_scaling,
-        *tcp_speed,
-        *tcp_wrench,
-        *joint_temperatures,
-        robot_mode,
-        safety_mode
-    ]
-
-    columns = [f"position_{i}" for i in range(6)] + \
-              [f"velocity_{i}" for i in range(6)] + \
-              [f"effort_{i}" for i in range(6)] + \
-              ["force_x", "force_y", "force_z", "torque_x", "torque_y", "torque_z"] + \
-              ["tcp_pos_x", "tcp_pos_y", "tcp_pos_z", "tcp_ori_x", "tcp_ori_y", "tcp_ori_z"] + \
-              ["tool_current", "speed_scaling"] + \
-              ["tcp_speed_x", "tcp_speed_y", "tcp_speed_z", "tcp_speed_rx", "tcp_speed_ry", "tcp_speed_rz"] + \
-              ["wrench_fx", "wrench_fy", "wrench_fz", "wrench_tx", "wrench_ty", "wrench_tz"] + \
-              [f"joint_temp_{i}" for i in range(6)] + \
-              ["robot_mode", "safety_mode"]
-
-    df = pd.DataFrame([data], columns=columns)
-    df.to_csv("ur5e_single_data.csv", index=False)
-    print("✅ บันทึกข้อมูลสำเร็จ: ur5e_single_data.csv")
-
-# เรียกใช้ฟังก์ชันดึงข้อมูลทั้งหมดจากหุ่นยนต์
-get_all_data_from_robot()
-
 # -------------------------- รันทั้ง 2 Thread พร้อมกัน --------------------------
 robot_thread = threading.Thread(target=move_robot)
 log_thread = threading.Thread(target=log_data)
