@@ -312,7 +312,6 @@ class UR5eControlGUI(QWidget):
         columns = ["timestamp"] + \
             [f"actual_position_{i}" for i in range(6)] + \
             [f"actual_velocity_{i}" for i in range(6)] + \
-            [f"actual_effort_{i}" for i in range(6)] + \
             ["actual_force_x", "actual_force_y", "actual_force_z", "actual_torque_x", "actual_torque_y", "actual_torque_z"] + \
             ["actual_tcp_pos_x", "actual_tcp_pos_y", "actual_tcp_pos_z", "actual_tcp_ori_x", "actual_tcp_ori_y", "actual_tcp_ori_z"] + \
             ["actual_tcp_speed_x", "actual_tcp_speed_y", "actual_tcp_speed_z", "actual_tcp_speed_rx", "actual_tcp_speed_ry", "actual_tcp_speed_rz"] + \
