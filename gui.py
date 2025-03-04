@@ -217,7 +217,7 @@ class UR5eControlGUI(QWidget):
             target_joint_currents = self.rtde_r.getTargetCurrent()
             # target_joint_voltage = self.rtde_r.getTargetVoltage()
 
-            target_momentums = self.rtde_r.getTargetMomentum()
+            actual_momentums = self.rtde_r.getActualMomentum()
             target_tcp_pose = self.rtde_r.getTargetTCPPose()
             target_tcp_speed = self.rtde_r.getTargetTCPSpeed()
 
@@ -227,7 +227,7 @@ class UR5eControlGUI(QWidget):
                 *actual_control_current, *actual_control_voltage, *actual_tcp_force, *actual_tcp_pose, *actual_tcp_speed,
                 *target_joint_positions, *target_joint_speeds, *target_joint_accelerations,
                 *target_joint_moments, *target_joint_currents, #*target_joint_voltage,
-                *target_momentums, *target_tcp_pose, *target_tcp_speed
+                *actual_momentums, *target_tcp_pose, *target_tcp_speed
             ])
 
             elapsed_time = time.time() - start_time
@@ -273,7 +273,7 @@ class UR5eControlGUI(QWidget):
             [f"target_acceleration_{i}" for i in range(6)] + \
             [f"target_moment_{i}" for i in range(6)] + \
             [f"target_current_{i}" for i in range(6)] + \
-            ["target_momentum"]+ \
+            ["actual_momentum"]+ \
             ["target_tcp_pos_x", "target_tcp_pos_y", "target_tcp_pos_z", "target_tcp_ori_x", "target_tcp_ori_y", "target_tcp_ori_z"] + \
             ["target_tcp_speed_x", "target_tcp_speed_y", "target_tcp_speed_z", "target_tcp_speed_rx", "target_tcp_speed_ry", "target_tcp_speed_rz"]
 
