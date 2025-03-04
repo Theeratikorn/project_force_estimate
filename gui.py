@@ -220,7 +220,6 @@ class UR5eControlGUI(QWidget):
 
                 actual_joint_positions = self.rtde_r.getActualQ()
                 actual_joint_speeds = self.rtde_r.getActualQd()
-                actual_joint_efforts = self.rtde_c.getJointTorques()
                 actual_tcp_pose = self.rtde_r.getActualTCPPose()
                 actual_tcp_speed = self.rtde_r.getActualTCPSpeed()
                 actual_tcp_force = self.rtde_r.getActualTCPForce()
@@ -241,7 +240,7 @@ class UR5eControlGUI(QWidget):
 
                 timestamp = time.time() - start_global_time
                 self.data.append([
-                    timestamp, *actual_joint_positions, *actual_joint_speeds, *actual_joint_efforts,
+                    timestamp, *actual_joint_positions, *actual_joint_speeds,
                     *actual_tcp_force, *actual_tcp_pose, *actual_tcp_speed,
                     *target_joint_positions, *target_joint_speeds, *target_joint_accelerations,
                     *target_joint_moments, *target_joint_currents, # *target_joint_voltage,
