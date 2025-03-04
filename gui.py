@@ -35,7 +35,7 @@ class UR5eControlGUI(QWidget):
 
         # IP Address Input
         form_layout = QFormLayout()
-        self.input_ip = QLineEdit("192.168.1.102")  # Default IP
+        self.input_ip = QLineEdit("192.168.56.101")  # Default IP
         self.btn_connect = QPushButton("Connect to Robot")
         self.btn_connect.clicked.connect(self.connect_robot)
         form_layout.addRow("Robot IP:", self.input_ip)
