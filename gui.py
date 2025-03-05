@@ -44,15 +44,15 @@ class UR5eControlGUI(QWidget):
 
         # Input Fields for Motion Parameters
         self.input_amp1 = QLineEdit("0.0025")
-        self.input_amp2 = QLineEdit("0.005")
-        self.input_amp3 = QLineEdit("0.0075")
-        self.input_amp4 = QLineEdit("0.01")
-        self.input_T_motion = QLineEdit("0.05")
+        # self.input_amp2 = QLineEdit("0.005")
+        # self.input_amp3 = QLineEdit("0.0075")
+        # self.input_amp4 = QLineEdit("0.01")
+        self.input_T_motion = QLineEdit("0.01")
         self.input_steps_per_cycle = QLineEdit("1000")
         self.input_cycles = QLineEdit("5")
         self.input_freq_logging = QLineEdit("500")
-        self.input_speed = QLineEdit("0.5")
-        self.input_acceleration = QLineEdit("2.0")
+        self.input_speed = QLineEdit("0.25")
+        self.input_acceleration = QLineEdit("1.2")
 
         form_layout.addRow("Amplitude 1 (m):", self.input_amp1)
         # form_layout.addRow("Amplitude 2 (m):", self.input_amp2)
@@ -207,6 +207,7 @@ class UR5eControlGUI(QWidget):
                 if (remaining_time > 0):
                     time.sleep(remaining_time)
 
+            self.status_label = QLabel("Status: FINISH MOVE")
             #QMessageBox.information(self, "Move Robot", "Robot movement completed.")
             self.stop_event.set()
 
