@@ -1,4 +1,3 @@
 PyQt6
 pandas
-rtde_control
-rtde_receive
+ur_rtde
