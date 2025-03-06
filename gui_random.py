@@ -43,10 +43,11 @@ class UR5eControlGUI(QWidget):
         form_layout.addRow(self.btn_connect)
 
         # Input Fields for Motion Parameters
-        self.input_amp1 = QLineEdit("0.0025")
-        # self.input_amp2 = QLineEdit("0.005")
-        # self.input_amp3 = QLineEdit("0.0075")
-        # self.input_amp4 = QLineEdit("0.01")
+        self.input_f1 = QLineEdit("10")
+        self.input_f2 = QLineEdit("40")
+        self.input_f3 = QLineEdit("20")
+        self.input_f4 = QLineEdit("30")
+        self.input_offset_amp = QLineEdit("-0.0075")
         self.input_T_motion = QLineEdit("0.01")
         self.input_steps_per_cycle = QLineEdit("1000")
         self.input_cycles = QLineEdit("5")
@@ -54,10 +55,11 @@ class UR5eControlGUI(QWidget):
         self.input_speed = QLineEdit("0.25")
         self.input_acceleration = QLineEdit("1.2")
 
-        form_layout.addRow("Amplitude 1 (m):", self.input_amp1)
-        # form_layout.addRow("Amplitude 2 (m):", self.input_amp2)
-        # form_layout.addRow("Amplitude 3 (m):", self.input_amp3)
-        # form_layout.addRow("Amplitude 4 (m):", self.input_amp4)
+        form_layout.addRow("f 1 (hz):", self.input_f1)
+        form_layout.addRow("f 2 (hz):", self.input_f2)
+        form_layout.addRow("f 3 (hz):", self.input_f3)
+        form_layout.addRow("f 4 (hz):", self.input_f4)
+        form_layout.addRow("Offset Amplitude:", self.input_offset_amp)
         form_layout.addRow("T_motion (s):", self.input_T_motion)
         form_layout.addRow("Steps per cycle:", self.input_steps_per_cycle)
         form_layout.addRow("Cycles:", self.input_cycles)
@@ -190,6 +192,11 @@ class UR5eControlGUI(QWidget):
         """Moves the robot in a sinusoidal Z motion"""
         try:
             start_pose = self.rtde_r.getActualTCPPose()
+            f1 = float(self.input_f1.text())
+            f2 = float(self.input_f2.text())
+            f3 = float(self.input_f3.text())
+            f4 = float(self.input_f4.text())
+            offset_amp = float(self.input_offset_amp.text())
             
             for i in range(total_steps):
                 if self.stop_event.is_set():
@@ -197,10 +204,10 @@ class UR5eControlGUI(QWidget):
 
                 start_time = time.time()
                 x = i / total_steps
-                z_offset = (0.0025 * math.cos(2 * 3.14 * 10 * x) +
-                            0.005 * math.cos(2 * 3.14 * 40 * x) +
-                            0.0025 * math.cos(2 * 3.14 * 20 * x) -
-                            0.0025 * math.cos(2 * 3.14 * 30 * x) - 0.0075)
+                z_offset = (0.0025 * math.cos(2 * 3.14 * f1 * x) +
+                            0.005 * math.cos(2 * 3.14 * f2 * x) +
+                            0.0025 * math.cos(2 * 3.14 * f3 * x) -
+                            0.0025 * math.cos(2 * 3.14 * f4 * x) + offset_amp)
                 new_pose = start_pose.copy()
                 new_pose[2] += z_offset
 
@@ -308,12 +315,12 @@ class UR5eControlGUI(QWidget):
             QMessageBox.warning(self, "Warning", "No data to export!")
             return
 
-        amp = self.input_amp1.text().replace(".", "_")
-        filename = f"UR5e_Amp_{amp}.csv"
+        # amp = self.input_amp1.text().replace(".", "_")
+        filename = f"RANDOM_Amp.csv"
         count = 1
 
         while os.path.exists(filename):
-            filename = f"RANDOM_Amp_{amp}_{count}.csv"
+            filename = f"RANDOM_Amp_{count}.csv"
             count += 1
 
         columns = ["timestamp"] + \
